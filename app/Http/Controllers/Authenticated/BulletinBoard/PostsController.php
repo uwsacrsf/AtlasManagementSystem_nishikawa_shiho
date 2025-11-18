@@ -60,11 +60,6 @@ class PostsController extends Controller
         $sub_category_id = $request->post_category_id;
         $post->subCategories()->attach($sub_category_id);
 
-        $request->validate([
-            'post_category_id' => 'required|exists:sub_categories,id',
-            'post_title' => 'required|string|max:100',
-            'post_body' => 'required|string|max:2000',
-        ]);
         return redirect()->route('post.show');
     }
 
@@ -81,7 +76,6 @@ class PostsController extends Controller
         return redirect()->route('post.show');
     }
     public function mainCategoryCreate(Request $request){
-        MainCategory::create(['main_category' => $request->main_category_name]);
         $request->validate([
             'main_category_name' => 'required|string|max:100|unique:main_categories,main_category',
         ]);
@@ -90,13 +84,15 @@ class PostsController extends Controller
     }
 
     public function commentCreate(Request $request){
+
+        $request->validate([
+            'comment' => 'required|string|max:250',
+
+        ]);
         PostComment::create([
             'post_id' => $request->post_id,
             'user_id' => Auth::id(),
             'comment' => $request->comment
-        ]);
-        $request->validate([
-            'comment' => 'required|string|max:250',
         ]);
         return redirect()->route('post.detail', ['id' => $request->post_id]);
     }
