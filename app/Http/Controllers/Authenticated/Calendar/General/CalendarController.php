@@ -19,20 +19,73 @@ class CalendarController extends Controller
     }
 
     public function reserve(Request $request){
+        $getPart = $request->input('getPart');
+        $getDate = $request->input('getData');
+
+        if (!is_array($getDate) || !is_array($getPart) || count($getDate) === 0 || count($getPart) === 0) {
+            return redirect()->back()->with('err_message', '予約する日付と部を一つ以上選択してください。');
+        }
+
+        if (count($getDate) !== count($getPart)) {
+             return redirect()->back()->with('err_message', '予約データに不整合があります。');
+        }
+
+        $reserveDays = array_filter(array_combine($getDate, $getPart));
+
+        if (empty($reserveDays)) {
+            return redirect()->back()->with('err_message', '予約する部を選択してください。');
+        }
+
         DB::beginTransaction();
         try{
-            $getPart = $request->getPart;
-            $getDate = $request->getData;
-            $reserveDays = array_filter(array_combine($getDate, $getPart));
-            foreach($reserveDays as $key => $value){
-                $reserve_settings = ReserveSettings::where('setting_reserve', $key)->where('setting_part', $value)->first();
-                $reserve_settings->decrement('limit_users');
-                $reserve_settings->users()->attach(Auth::id());
+            $count = 0;
+            foreach($reserveDays as $day => $part){
+                $reserve_settings = ReserveSettings::with('users')->where('setting_reserve', $day)->where('setting_part', $part)->first();
+
+                if ($reserve_settings && $reserve_settings->users->count() < $reserve_settings->limit_users) {
+                    // 予約処理を実行
+                    $reserve_settings->users()->attach(Auth::id());
+                    $count++;
+                }
             }
             DB::commit();
         }catch(\Exception $e){
             DB::rollback();
+            return redirect()->back()->with('err_message', '予約処理中にエラーが発生しました。再度お試しください。');
         }
-        return redirect()->route('calendar.general.show', ['user_id' => Auth::id()]);
+
+        $message = ($count > 0) ? $count . '件の予約が完了しました。' : '予約可能な枠がありませんでした。';
+
+        return redirect()->route('calendar.general.show', ['user_id' => Auth::id()])->with('success_message', $message);
     }
+
+public function delete(Request $request){
+    $reserveDate = $request->input('delete_date');
+
+    if (empty($reserveDate)) {
+        return redirect()->back()->with('err_message', 'キャンセル対象の日付が指定されていません。');
+    }
+
+    DB::beginTransaction();
+    try {
+        $reserveSetting = Auth::user()->reserveSettings()
+                            ->where('setting_reserve', $reserveDate)
+                            ->first();
+
+        if ($reserveSetting) {
+            $reserveSetting->users()->detach(Auth::id());
+
+            DB::commit();
+
+            return redirect()->route('calendar.general.show', ['user_id' => Auth::id()])->with('success_message', '予約をキャンセルしました。');
+        } else {
+            DB::rollback();
+            return redirect()->back()->with('err_message', 'キャンセル対象の予約が見つかりませんでした。');
+        }
+
+    } catch (\Exception $e) {
+        DB::rollback();
+        return redirect()->back()->with('err_message', 'キャンセル処理中にエラーが発生しました。再度お試しください。');
+    }
+}
 }

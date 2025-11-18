@@ -3,16 +3,21 @@
 namespace App\Models\Posts;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Categories\SubCategory;
 
 class Post extends Model
 {
-    const UPDATED_AT = null;
-    const CREATED_AT = null;
+    /*const UPDATED_AT = null;
+    const CREATED_AT = null;*/
 
     protected $fillable = [
         'user_id',
         'post_title',
         'post',
+    ];
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function user(){
@@ -24,7 +29,7 @@ class Post extends Model
     }
 
     public function subCategories(){
-        // リレーションの定義
+        return $this->belongsToMany(SubCategory::class, 'post_sub_categories', 'post_id', 'sub_category_id');
     }
 
     // コメント数

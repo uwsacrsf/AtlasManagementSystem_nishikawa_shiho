@@ -30,4 +30,12 @@ class CalendarWeekBlankDay extends CalendarWeekDay{
      return '';
    }
 
+   function authReserveDay(){
+     return [];
+   }
+
+   function authReserveDate($reserveDate){
+     return collect();
+   }
+
 }
