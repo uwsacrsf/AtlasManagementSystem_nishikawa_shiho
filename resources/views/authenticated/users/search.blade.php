@@ -44,6 +44,11 @@
       <div>
         @if($user->role == 4)
         <span>選択科目 :</span>
+    @forelse($user->subjects as $subject)
+        <span>{{ $subject->subject }}</span>&nbsp;
+    @empty
+        <span>なし</span>
+    @endforelse
         @endif
       </div>
     </div>

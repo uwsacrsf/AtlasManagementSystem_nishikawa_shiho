@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Authenticated\BulletinBoard;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Categories\MainCategory;
-use App\Models\Categories\SubCategory;
+use App\Models\Categories\SubCategory; // SubCategoryモデルを明示的に使用
 use App\Models\Posts\Post;
 use App\Models\Posts\PostComment;
 use App\Models\Posts\Like;
@@ -17,26 +17,58 @@ use App\Http\Requests\EditPostRequest;
 
 class PostsController extends Controller
 {
+    /**
+     * 投稿一覧画面を表示し、各種絞り込み検索に対応する
+     */
     public function show(Request $request){
-        $posts = Post::with('user', 'postComments')->get();
-        $categories = MainCategory::get();
+
+        $posts = Post::query()->with(['user', 'postComments', 'likes', 'subCategories']);
+
+        $categories = MainCategory::with('subCategories')->get();
         $like = new Like;
         $post_comment = new Post;
+
+        // キーワード検索処理の開始
         if(!empty($request->keyword)){
-            $posts = Post::with('user', 'postComments')
-            ->where('post_title', 'like', '%'.$request->keyword.'%')
-            ->orWhere('post', 'like', '%'.$request->keyword.'%')->get();
-        }else if($request->category_word){
-            $sub_category = $request->category_word;
-            $posts = Post::with('user', 'postComments')->get();
-        }else if($request->like_posts){
-            $likes = Auth::user()->likePostId()->get('like_post_id');
-            $posts = Post::with('user', 'postComments')
-            ->whereIn('id', $likes)->get();
-        }else if($request->my_posts){
-            $posts = Post::with('user', 'postComments')
-            ->where('user_id', Auth::id())->get();
+            $keyword = $request->keyword;
+
+            // 1. キーワードがSubCategory名と完全一致するかチェック
+            // SubCategoryモデルを使用して、sub_categoryカラムがキーワードと一致するものを探す
+            $subCategory = SubCategory::where('sub_category', $keyword)->first();
+
+            if ($subCategory) {
+                // 完全一致した場合: そのSubCategory IDで絞り込む
+                $posts->whereHas('subCategories', function($query) use ($subCategory){
+                    $query->where('sub_categories.id', $subCategory->id);
+                });
+            } else {
+                // 不一致の場合: 従来通り、タイトルまたは内容の部分一致検索を行う
+                $posts->where(function($query) use ($keyword){
+                    $query->where('post_title', 'like', '%'.$keyword.'%')
+                        ->orWhere('post', 'like', '%'.$keyword.'%');
+                });
+            }
+
+        } else if($request->category_id){
+            // 2. サブカテゴリーIDでの絞り込み（ボタンクリック時）
+            $posts->whereHas('subCategories', function($query) use ($request){
+                $query->where('sub_categories.id', $request->category_id);
+            });
+
+        } else if($request->like_posts){
+            // 3. いいねした投稿
+            // Auth::user()->likePostId() は Likeモデルのコレクションを返すため、pluckでID配列を取得
+            $likes = Auth::user()->likePostId()->pluck('like_post_id');
+            $posts->whereIn('id', $likes);
+
+        } else if($request->my_posts){
+            // 4. 自分の投稿
+            $posts->where('user_id', Auth::id());
         }
+
+        // 最後に get() を実行して結果を取得
+        $posts = $posts->get();
+
         return view('authenticated.bulletinboard.posts', compact('posts', 'categories', 'like', 'post_comment'));
     }
 
@@ -98,14 +130,16 @@ class PostsController extends Controller
     }
 
     public function myBulletinBoard(){
-        $posts = Auth::user()->posts()->get();
+        // リレーションをEager Load
+        $posts = Auth::user()->posts()->with(['user', 'postComments', 'likes', 'subCategories'])->get();
         $like = new Like;
         return view('authenticated.bulletinboard.post_myself', compact('posts', 'like'));
     }
 
     public function likeBulletinBoard(){
-        $like_post_id = Like::with('users')->where('like_user_id', Auth::id())->get('like_post_id')->toArray();
-        $posts = Post::with('user')->whereIn('id', $like_post_id)->get();
+        // リレーションをEager Load
+        $like_post_id = Like::where('like_user_id', Auth::id())->pluck('like_post_id')->toArray();
+        $posts = Post::with(['user', 'postComments', 'likes', 'subCategories'])->whereIn('id', $like_post_id)->get();
         $like = new Like;
         return view('authenticated.bulletinboard.post_like', compact('posts', 'like'));
     }
