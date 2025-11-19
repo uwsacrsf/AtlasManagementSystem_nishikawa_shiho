@@ -98,6 +98,7 @@ class PostsController extends Controller
         Post::findOrFail($id)->delete();
         return redirect()->route('post.show');
     }
+
     public function mainCategoryCreate(Request $request){
         $request->validate([
             'main_category_name' => 'required|string|max:100|unique:main_categories,main_category',

@@ -5,34 +5,41 @@ use App\Models\Users\User;
 
 class SelectNameDetails implements DisplayUsers{
 
-  // 改修課題：選択科目の検索機能
+  /**
+   *
+   * @param string $keyword
+   * @param string $category
+   * @param string|null $updown
+   * @param string|null $gender
+   * @param string|null $role
+   * @param mixed $subjects
+   * @return \Illuminate\Support\Collection
+   */
   public function resultUsers($keyword, $category, $updown, $gender, $role, $subjects){
-    if(is_null($gender)){
-      $gender = ['1', '2', '3'];
-    }else{
-      $gender = array($gender);
-    }
-    if(is_null($role)){
-      $role = ['1', '2', '3', '4'];
-    }else{
-      $role = array($role);
-    }
-    $users = User::with('subjects')
+
+    $genderArray = is_null($gender) ? ['1', '2', '3'] : [$gender];
+    $roleArray = is_null($role) ? ['1', '2', '3', '4'] : [$role];
+
+    $query = User::with('subjects')
     ->where(function($q) use ($keyword){
-      $q->Where('over_name', 'like', '%'.$keyword.'%')
-      ->orWhere('under_name', 'like', '%'.$keyword.'%')
-      ->orWhere('over_name_kana', 'like', '%'.$keyword.'%')
-      ->orWhere('under_name_kana', 'like', '%'.$keyword.'%');
+        $q->where('over_name', 'like', '%'.$keyword.'%')
+        ->orWhere('under_name', 'like', '%'.$keyword.'%')
+        ->orWhere('over_name_kana', 'like', '%'.$keyword.'%')
+        ->orWhere('under_name_kana', 'like', '%'.$keyword.'%');
     })
-    ->where(function($q) use ($role, $gender){
-      $q->whereIn('sex', $gender)
-      ->whereIn('role', $role);
-    })
-    ->whereHas('subjects', function($q) use ($subjects){
-      $q->where('subjects.id', $subjects);
-    })
-    ->orderBy('over_name_kana', $updown)->get();
+    ->whereIn('sex', $genderArray)
+    ->whereIn('role', $roleArray);
+
+
+    if (!empty($subjects)) {
+        $subjectsArray = is_array($subjects) ? $subjects : [$subjects];
+
+        $query->whereHas('subjects', function($q) use ($subjectsArray){
+            $q->whereIn('subject_id', $subjectsArray);
+        });
+    }
+    $users = $query->orderBy('over_name_kana', $updown)->get();
+
     return $users;
   }
-
 }

@@ -5,17 +5,29 @@ use App\Models\Users\User;
 
 class SearchResultFactories{
 
-  // 改修課題：選択科目の検索機能
+  /**
+   *
+   * @param string $keyword
+   * @param string $category
+   * @param string $updown
+   * @param string $gender
+   * @param string $role
+   * @param mixed $subjects
+   * @return object
+   */
   public function initializeUsers($keyword, $category, $updown, $gender, $role, $subjects){
+
+    $shouldUseDetailSearch = !empty($subjects);
+
     if($category == 'name'){
-      if(is_null($subjects)){
+      if(!$shouldUseDetailSearch){
         $searchResults = new SelectNames();
       }else{
         $searchResults = new SelectNameDetails();
       }
       return $searchResults->resultUsers($keyword, $category, $updown, $gender, $role, $subjects);
     }else if($category == 'id'){
-      if(is_null($subjects)){
+      if(!$shouldUseDetailSearch){
         $searchResults = new SelectIds();
       }else{
         $searchResults = new SelectIdDetails();
@@ -23,7 +35,7 @@ class SearchResultFactories{
       return $searchResults->resultUsers($keyword, $category, $updown, $gender, $role, $subjects);
     }else{
       $allUsers = new AllUsers();
-    return $allUsers->resultUsers($keyword, $category, $updown, $gender, $role, $subjects);
+      return $allUsers->resultUsers($keyword, $category, $updown, $gender, $role, $subjects);
     }
   }
 }
