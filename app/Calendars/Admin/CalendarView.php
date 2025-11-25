@@ -17,6 +17,7 @@ class CalendarView{
   public function render(){
     $html = [];
     $html[] = '<div class="calendar text-center">';
+    $html[] = '<form action="/setting/reserve/setting" method="post" id="reserveSetting">'.csrf_field();
     $html[] = '<table class="table m-auto border">';
     $html[] = '<thead>';
     $html[] = '<tr>';

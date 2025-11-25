@@ -23,22 +23,28 @@ class CalendarWeekDay{
     return $this->carbon->format("Y-m-d");
   }
 
-  function dayPartCounts($ymd){
+  public function dayPartCounts($ymd){
     $html = [];
-    $one_part = ReserveSettings::with('users')->where('setting_reserve', $ymd)->where('setting_part', '1')->first();
-    $two_part = ReserveSettings::with('users')->where('setting_reserve', $ymd)->where('setting_part', '2')->first();
-    $three_part = ReserveSettings::with('users')->where('setting_reserve', $ymd)->where('setting_part', '3')->first();
-
     $html[] = '<div class="text-left">';
-    if($one_part){
-      $html[] = '<p class="day_part m-0 pt-1">1部</p>';
+
+    // 全部数に対してループ処理
+    for($part_id = 1; $part_id <= 3; $part_id++){
+
+        $reserveSetting = ReserveSettings::with('users')
+                            ->where('setting_reserve', $ymd)
+                            ->where('setting_part', $part_id)
+                            ->first();
+
+        $reserve_count = $reserveSetting ? $reserveSetting->users->count() : 0;
+
+        $detail_url = route('calendar.admin.detail', ['date' => $ymd, 'part' => $part_id]);
+
+        $html[] = '<p class="day_part m-0 pt-1">';
+        $html[] = '<a href="'.$detail_url.'">'.$part_id.'部</a>';
+        $html[] = ' '.$reserve_count;
+        $html[] = '</p>';
     }
-    if($two_part){
-      $html[] = '<p class="day_part m-0 pt-1">2部</p>';
-    }
-    if($three_part){
-      $html[] = '<p class="day_part m-0 pt-1">3部</p>';
-    }
+
     $html[] = '</div>';
 
     return implode("", $html);

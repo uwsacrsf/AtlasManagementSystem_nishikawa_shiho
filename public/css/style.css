@@ -455,3 +455,122 @@ li {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
 }
+
+/* カレンダー全体 */
+.calendar table {
+  width: 100%;
+  table-layout: fixed;
+  /* カラム幅を均等に */
+  border-collapse: collapse;
+}
+
+/* 曜日のヘッダー */
+.calendar th {
+  background-color: #f7f7f7;
+  padding: 8px 0;
+  border: 1px solid #ddd;
+  font-weight: bold;
+}
+
+/* 日付セル全体 */
+.calendar-td {
+  height: 120px;
+  /* セルの高さを確保 */
+  padding: 5px;
+  border: 1px solid #ddd;
+  vertical-align: top;
+  /* 内容を上揃えにする */
+  position: relative;
+  /* 日付番号の配置基準 */
+}
+
+/* 過去日 */
+.calendar-td.past-day {
+  background-color: #f0f0f0;
+  color: #999;
+}
+
+/* 日付の数字 (CalendarDay.phpのrender()から出力される要素) */
+.calendar-td .day-number {
+  position: absolute;
+  top: 5px;
+  /* 上から5px */
+  right: 5px;
+  /* 右から5px */
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  /* 平日の色 */
+  margin: 0;
+  padding: 0;
+}
+
+/* 土曜日の日付の色 */
+.calendar-td.day-weekend .day-number span:not(.today-mark) {
+  color: #0088cc;
+  /* 青 */
+}
+
+/* 日曜日の日付の色 */
+/* 日曜日の日付の色はCSSの:nth-child(7)で制御されていたため、曜日のクラスに依存させます */
+.calendar-td:nth-child(7) .day-number span:not(.today-mark) {
+  color: #cc0000;
+  /* 赤 */
+}
+
+/* 本日の日付マーク */
+.calendar-td .today-mark {
+  color: white;
+  background-color: #007bff;
+  /* 青色で強調 */
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+}
+
+/* 予約枠のリンクスタイル */
+.calendar-td .part-link {
+  display: block;
+  /* 縦に並べる */
+  font-size: 12px;
+  padding: 2px 4px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  text-align: left;
+  /* 左揃え */
+  text-decoration: none;
+  /* 下線を非表示 */
+  color: #333;
+  /* デフォルトの文字色 */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* 予約者がいる場合のリンク（イメージ画像の赤い/青い枠に近づける） */
+.calendar-td .part-link.reserved-count {
+  font-weight: bold;
+  color: #cc0000;
+  /* 予約者がいる場合は赤色 */
+  background-color: #fff0f0;
+  /* 薄い赤の背景 */
+  border: 1px solid #cc0000;
+}
+
+/* 予約者が0の場合のリンク */
+.calendar-td .part-link:not(.reserved-count) {
+  color: #0088cc;
+  /* 予約者が0の場合は青色 */
+  background-color: #f0f8ff;
+  /* 薄い青の背景 */
+  border: 1px solid #0088cc;
+}
+
+/* ホバーエフェクト */
+.calendar-td .part-link:hover {
+  opacity: 0.8;
+}
