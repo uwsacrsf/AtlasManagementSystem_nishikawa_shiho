@@ -3,6 +3,17 @@
   <div class="w-50 mt-5">
     <div class="m-3 detail_container">
       <div class="p-3">
+
+      @if ($errors->any())
+            <div class="alert alert-danger mb-4 p-3" style="color: red; border: 1px solid red; background-color: #ffe0e0; border-radius: 5px;">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>※ {{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <div class="detail_inner_head">
           <div>
           @if($post->subCategories->isNotEmpty())
@@ -11,7 +22,7 @@
           </div>
           @if(Auth::id() === $post->user_id)
         <div>
-        <span class="edit-modal-open" post_title="{{ $post->post_title }}" post_body="{{ $post->post }}" post_id="{{ $post->id }}">編集</span>
+        <span class="edit-modal-open" data-post_title="{{ $post->post_title }}" data-post_body="{{ $post->post }}" data-post_id="{{ $post->id }}">編集</span>
         <a href="#" class="js-delete-modal-open">削除</a>
        </div>
         @endif
@@ -62,14 +73,14 @@
     <form action="{{ route('post.edit') }}" method="post">
       <div class="w-100">
         <div class="modal-inner-title w-50 m-auto">
-          <input type="text" name="post_title" placeholder="タイトル" class="w-100">
+          <input type="text" name="post_title" placeholder="タイトル" class="w-100" value="{{ old('post_title') }}">
         </div>
         <div class="modal-inner-body w-50 m-auto pt-3 pb-3">
-          <textarea placeholder="投稿内容" name="post_body" class="w-100"></textarea>
+          <textarea placeholder="投稿内容" name="post_body" class="w-100">{{ old('post_body') }}</textarea>
         </div>
         <div class="w-50 m-auto edit-modal-btn d-flex">
           <a class="js-modal-close btn btn-danger d-inline-block" href="">閉じる</a>
-          <input type="hidden" class="edit-modal-hidden" name="post_id" value="">
+          <input type="hidden" class="edit-modal-hidden" name="post_id" value="{{ old('post_id') }}">
           <input type="submit" class="btn btn-primary d-block" value="編集">
         </div>
       </div>
@@ -89,4 +100,13 @@
         </div>
     </div>
 </div>
+{{-- <script src="{{ asset('js/detail_page_script.js') }}"></script> --}}
+
+    @if ($errors->any())
+    <script>
+        $(function() {
+            $('.js-modal').fadeIn();
+        });
+    </script>
+    @endif
 </x-sidebar>

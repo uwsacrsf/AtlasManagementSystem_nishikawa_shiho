@@ -12,11 +12,13 @@ $(function () {
   // ----------------------------------------------------
   $('.edit-modal-open').on('click', function () {
     $('.js-modal').fadeIn();
-    var post_title = $(this).attr('post_title');
-    var post_body = $(this).attr('post_body');
-    var post_id = $(this).attr('post_id');
-    $('.modal-inner-title input').val(post_title);
-    $('.modal-inner-body textarea').text(post_body);
+    // data属性から値を取得（Bladeファイル側で属性名を data-post_title のように修正している前提）
+    var post_title = $(this).data('post_title');
+    var post_body = $(this).data('post_body');
+    var post_id = $(this).data('post_id');
+
+    $('.modal-inner-title input[name="post_title"]').val(post_title); // input[name]で指定
+    $('.modal-inner-body textarea[name="post_body"]').text(post_body); // textarea[name]で指定
     $('.edit-modal-hidden').val(post_id);
     return false;
   });
@@ -33,7 +35,6 @@ $(function () {
     $('#delete-modal').fadeOut();
     return false;
   });
-
 
   $('.subject_inner').hide();
 
@@ -53,4 +54,5 @@ $(function () {
     e.preventDefault();
     // ... (いいね解除処理のコード) ...
   });
+
 });

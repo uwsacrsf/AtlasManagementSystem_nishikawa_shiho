@@ -23,25 +23,32 @@ class PostFormRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            // フォームに追加されたカテゴリーIDのバリデーション
-            'post_category_id' => 'required|exists:sub_categories,id',
+        // 基本となるルール（新規投稿時に適用）
+        $rules = [
             'post_title' => 'required|string|max:100',
             'post_body' => 'required|string|max:2000',
-            // 新規投稿なので、post_id のルールは不要
+            // 'post_category_id' => 'required|exists:sub_categories,id', // カテゴリは新規作成時のみ必須と想定
         ];
+
+        // 編集処理の場合 (post_id がリクエストに含まれている場合)
+        if ($this->has('post_id')) {
+            $rules['post_id'] = 'required|exists:posts,id';
+        }
+
+        return $rules;
     }
 
-    public function messages(){
+    public function messages()
+    {
         return [
-            'post_category_id.required' => 'カテゴリーは必ず選択してください。',
-            'post_category_id.exists' => '選択されたカテゴリーは無効です。',
             'post_title.required' => 'タイトルは必ず入力してください。',
-            'post_title.string' => 'タイトルは文字列である必要があります。',
             'post_title.max' => 'タイトルは100文字以内で入力してください。',
             'post_body.required' => '内容は必ず入力してください。',
-            'post_body.string' => '内容は文字列である必要があります。',
-            'post_body.max' => '最大文字数は2000文字です。',
+            'post_body.max' => '内容は2000文字以内で入力してください。',
+
+            // 編集時用のメッセージ
+            'post_id.required' => '編集対象の投稿IDが指定されていません。',
+            'post_id.exists' => '存在しない投稿IDです。',
         ];
     }
 }
