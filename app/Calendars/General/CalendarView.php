@@ -57,41 +57,56 @@ class CalendarView{
         $html[] = $day->render();
         $html[] = $day->getDate();
 
-        if ($isPastDay) {
-          // 過去日なら何も表示しない
-          $html[] = '<p class="reservation-closed">受付終了</p>';
-          $html[] = '<input type="hidden" name="getPart[]" value="" form="reserveParts">';
-
-        } elseif(in_array($day->everyDay(), $day->authReserveDay())){
-
+        $reservedSetting = null;
+        if(in_array($day->everyDay(), $day->authReserveDay())){
           $reservedSetting = $day->authReserveDate($day->everyDay())->first();
+        }
 
+        if ($isPastDay) {
           if ($reservedSetting) {
-              $reservePartNum = $reservedSetting->setting_part;
-              $reservePartName = "";
+            $reservePartNum = $reservedSetting->setting_part;
+            $reservePartName = "";
 
-              if($reservePartNum == 1){
-                $reservePartName = "リモ1部";
-              }else if($reservePartNum == 2){
-                $reservePartName = "リモ2部";
-              }else if($reservePartNum == 3){
-                $reservePartName = "リモ3部";
-              }
+            if($reservePartNum == 1){
+              $reservePartName = "リモ1部";
+            }else if($reservePartNum == 2){
+              $reservePartName = "リモ2部";
+            }else if($reservePartNum == 3){
+              $reservePartName = "リモ3部";
+            }
+            $html[] = '<div class="reserved-part-past" style="font-size:12px; color: #555; background-color: #f0f0f0; border-radius: 4px; padding: 2px 5px; margin-top: 5px;">'. $reservePartName .'</div>';
+            $html[] = '<input type="hidden" name="getPart[]" value="" form="reserveParts">';
 
-              $html[] = '<button type="button" '.
-                        'class="btn btn-danger p-0 w-75 js-cancel-modal" '.
-                        'data-date="'.$reservedSetting->setting_reserve.'" '.
-                        'data-part-name="'.$reservePartName.'" '.
-                        'data-reserve-id="'.$reservedSetting->setting_reserve.'" '.
-                        'style="font-size:12px">'. $reservePartName .'</button>';
-
-              $html[] = '<input type="hidden" name="getPart[]" value="" form="reserveParts">';
           } else {
-              $html[] = $day->selectPart($day->everyDay());
+            $html[] = '<p class="reservation-closed">受付終了</p>';
+            $html[] = '<input type="hidden" name="getPart[]" value="" form="reserveParts">';
           }
 
         } else {
-          $html[] = $day->selectPart($day->everyDay());
+          if($reservedSetting){
+            $reservePartNum = $reservedSetting->setting_part;
+            $reservePartName = "";
+
+            if($reservePartNum == 1){
+              $reservePartName = "リモ1部";
+            }else if($reservePartNum == 2){
+              $reservePartName = "リモ2部";
+            }else if($reservePartNum == 3){
+              $reservePartName = "リモ3部";
+            }
+
+            $html[] = '<button type="button" '.
+                      'class="btn btn-danger p-0 w-75 js-cancel-modal" '.
+                      'data-date="'.$reservedSetting->setting_reserve.'" '.
+                      'data-part-name="'.$reservePartName.'" '.
+                      'data-reserve-id="'.$reservedSetting->setting_reserve.'" '.
+                      'style="font-size:12px">'. $reservePartName .'</button>';
+
+            $html[] = '<input type="hidden" name="getPart[]" value="" form="reserveParts">';
+
+          } else {
+            $html[] = $day->selectPart($day->everyDay());
+          }
         }
 
         $html[] = '</td>';

@@ -1,7 +1,7 @@
 <x-guest-layout>
   <form action="{{ route('registerPost') }}" method="POST">
-    <div class="w-100 vh-100 d-flex" style="align-items:center; justify-content:center;">
-      <div class="w-25 vh-75 border p-3">
+  <div class="w-100 vh-100 d-flex flex-column" style="background-color: #f0f8ff; align-items:center; justify-content:center;">
+      <div class="w-25 vh-75 border p-3 w-25" style="background-color: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
         <div class="register_form">
           <div class="d-flex mt-3" style="justify-content:space-between">
             <div class="" style="width:140px">
@@ -63,7 +63,8 @@
             <p class="error-message">{{ $message }}</p>
           @enderror
           <label class="d-block m-0 aa" style="font-size:13px">生年月日</label>
-          <select class="old_year" name="old_year">
+          <div class="border-bottom border-primary d-flex align-items-center justify-content-between">
+          <select class="old_year border-0 bg-transparent p-0 flex-grow-1 mr-1" name="old_year">
             <option value="none">-----</option>
             <option value="1985">1985</option>
             <option value="1986">1986</option>
@@ -92,8 +93,8 @@
             <option value="2009">2009</option>
             <option value="2010">2010</option>
           </select>
-          <label style="font-size:13px">年</label>
-          <select class="old_month" name="old_month">
+          <label style="font-size:13px" class="mr-2">年</label>
+        <select class="old_month border-0 bg-transparent p-0 flex-grow-1 mr-1" name="old_month">
             <option value="none">-----</option>
             <option value="01">1</option>
             <option value="02">2</option>
@@ -108,8 +109,8 @@
             <option value="11">11</option>
             <option value="12">12</option>
           </select>
-          <label style="font-size:13px">月</label>
-          <select class="old_day" name="old_day">
+          <label style="font-size:13px" class="mr-2">月</label>
+        <select class="old_day border-0 bg-transparent p-0 flex-grow-1" name="old_day">
             <option value="none">-----</option>
             <option value="01">1</option>
             <option value="02">2</option>
